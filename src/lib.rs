@@ -4,6 +4,7 @@ use libc::uint64_t;
 
 #[link(name = "c_bindings", kind="static")]
 extern {
+    #[inline]
     fn c_clzl(x: uint64_t) -> uint64_t;
 }
 
@@ -20,14 +21,14 @@ extern {
 ///     assert_eq!(rust_clzl(2), 62);
 ///     assert_eq!(rust_clzl(8), 60);
 ///     assert_eq!(rust_clzl(std::u64::MAX), 0);
-///     assert_eq!(rust_clzl(0), 0);
+///     assert_eq!(rust_clzl(0), 64);
 /// }
 /// ```
 #[inline]
 pub fn rust_clzl(x: u64) -> u64 {
     
-    //clzl of 0 is UB. return 0 instead.
-    if x == 0 { return 0 }
+    //clzl of 0 is UB. return 64 instead, since there are 64 zero's.
+    if x == 0 { return 64 }
     unsafe {
         c_clzl(x)
     }
@@ -42,6 +43,6 @@ mod tests {
         assert_eq!(rust_clzl(2), 62);
         assert_eq!(rust_clzl(8), 60);
         assert_eq!(rust_clzl(std::u64::MAX), 0);
-        assert_eq!(rust_clzl(0), 0);
+        assert_eq!(rust_clzl(0), 64);
     }
 }
