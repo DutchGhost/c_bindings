@@ -2,5 +2,11 @@
 name = "c_bindings"
 version = "0.1.0"
 authors = ["DutchGhost <kasper199914@gmail.com>"]
+links = "c_bindings"
+build = "build.rs"
 
 [dependencies]
+libc = "*"
+
+[build-dependencies]
+gcc = "*"
