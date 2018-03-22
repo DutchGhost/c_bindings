@@ -6,7 +6,7 @@ uint64_t __inline __builtin_clz(uint64_t x) {
     return (31-r);
 }
 
-uint64_t clzl(uint64_t x)
+uint64_t c_clzl(uint64_t x)
 {
     uint64_t u32 = (x >> 32);
     uint64_t result = u32 ? __builtin_clz(u32) : 32;

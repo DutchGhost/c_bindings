@@ -4,13 +4,13 @@ use libc::uint64_t;
 
 #[link(name = "c_bindings", kind="static")]
 extern {
-    fn clzl(x: uint64_t) -> uint64_t;
+    fn c_clzl(x: uint64_t) -> uint64_t;
 }
 
 #[inline]
 pub fn rust_clzl(x: u64) -> u64 {
     unsafe {
-        clzl(x)
+        c_clzl(x)
     }
 }
 
