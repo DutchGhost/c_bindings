@@ -1,4 +1,6 @@
+ #![feature(test)]
 extern crate libc;
+extern crate test;
 
 use libc::uint64_t;
 
@@ -45,6 +47,7 @@ pub fn rust_atoi(s: &str) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test::Bencher;
     
     #[test]
     fn test_rust_clzl() {
@@ -66,5 +69,24 @@ mod tests {
 
         let sss = "4";
         assert_eq!(rust_atoi(sss), 4);
+    }
+
+    #[bench]
+    fn rust_native_parse(b: &mut test::Bencher) {
+        let s = ["123498", "987234", "8907239874", "982734", "123876", "10987", "84750"];
+        b.iter(|| {
+            for item in s.iter() {
+                let mut n = test::black_box(item.parse::<u64>());
+            }
+        })
+    }
+    #[bench]
+    fn rust_atoi_parse(b: &mut test::Bencher) {
+        let s = ["123498", "987234", "8907239874", "982734", "123876", "10987", "84750"];
+        b.iter(|| {
+            for item in s.iter() {
+                let mut n = test::black_box(rust_atoi(item));
+            }
+        })
     }
 }
