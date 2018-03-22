@@ -32,49 +32,39 @@ uint64_t c_atoi(const char * b, uint64_t length) {
 
     uint64_t i = 20 - length;
 
-    // for (; b != e; ++b) {
-    //     uint64_t d = (*b) - '0';
-
-    //     if (d > 10) {
-    //         return 0;
-    //     }
-    //     result += pow10[i++] * d;
-    // }
-
     for(; length >= 4; b += 4, length -= 4) {
         uint64_t d1 = b[0] - '0';
-        if (d1 > 9) {
-            return 0;
-        }
+        // if (d1 > 9) {
+        //     return 0;
+        // }
         uint64_t r1 = pow10[i++] * d1;
 
         uint64_t d2 = b[1] - '0';
-        if (d2 > 9) {
-            return 0;
-        }
+        // if (d2 > 9) {
+        //     return 0;
+        // }
         uint64_t r2 = pow10[i++] * d2;
 
         uint64_t d3 = b[2] - '0';
-        if (d3 > 9) {
-            return 0;
-        }
+        // if (d3 > 9) {
+        //     return 0;
+        // }
         uint64_t r3 = pow10[i++] * d3;
 
         uint64_t d4 = b[3] - '0';
-        if (d4 > 9) {
-            return 0;
-        }
+        // if (d4 > 9) {
+        //     return 0;
+        // }
         uint64_t r4 = pow10[i++] * d4;
 
         result += r1 + r2 + r3 + r4;
     }
-
     for (; length--; b++) {
         uint64_t d = b[0] - '0';
 
-        if (d > 9) {
-            return 0;
-        }
+        // if (d > 9) {
+        //     return 0;
+        // }
 
         result += pow10[i++] * d;
     }
