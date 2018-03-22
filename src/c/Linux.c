@@ -4,7 +4,7 @@ uint64_t c_clzl(uint64_t x) {
     return __builtin_clzl(x);
 }
 
-uint64_t c_atoi(const char * b, const char * e) {
+uint64_t c_atoi(const char * b, uint64_t length) {
     static const uint64_t pow10[20] = {
         1000000000000000000UL,
         100000000000000000UL,
@@ -30,10 +30,19 @@ uint64_t c_atoi(const char * b, const char * e) {
 
     uint64_t result = 0;
 
-    uint64_t i = 20 - (e - b);
+    uint64_t i = 20 - length;
 
-    for (; b != e; ++b) {
-        uint64_t d = (*b) - '0';
+    // for (; b != e; ++b) {
+    //     uint64_t d = (*b) - '0';
+
+    //     if (d > 10) {
+    //         return 0;
+    //     }
+    //     result += pow10[i++] * d;
+    // }
+
+    for(; length--; b++) {
+           uint64_t d = (*b) - '0';
 
         if (d > 10) {
             return 0;

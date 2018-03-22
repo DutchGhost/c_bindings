@@ -6,7 +6,7 @@ use libc::uint64_t;
 extern {
     #[inline]
     fn c_clzl(x: uint64_t) -> uint64_t;
-    fn c_atoi(b: *const u8, e: *const u8) -> uint64_t;
+    fn c_atoi(b: *const u8, e: uint64_t) -> uint64_t;
 
 }
 
@@ -38,13 +38,7 @@ pub fn rust_clzl(x: u64) -> u64 {
 
 pub fn rust_atoi(s: &str) -> u64 {
     unsafe {
-        let b = s.as_bytes();
-
-        let begin = b.as_ptr();
-        let l = b.len() as isize;
-
-        // begin.offset(l) points to garbage.
-        c_atoi(begin, begin.offset(l))
+        c_atoi(s.as_ptr(), s.len() as u64)
     }
 }
 
