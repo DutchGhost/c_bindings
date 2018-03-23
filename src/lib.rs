@@ -83,13 +83,11 @@ pub fn rust_atoi(s: &str) -> u64 {
 }
 
 pub fn safe_atoi(s: &str) -> u64 {
-
     let b = s.as_bytes();
     let mut len = s.len();
-    let mut i: usize = 20 - len;
-    let mut idx: usize = 0;
+    let mut i = 20 - len;
+    let mut idx = 0;
     let mut result = 0;
-
     unsafe {
         while len >= 4 {
             let d1 = (b.get_unchecked(idx) - b'0') as u64;
@@ -122,36 +120,35 @@ pub fn safe_atoi(s: &str) -> u64 {
         }
 
         return result
-
     }
-    // let mut length = s.len();
-    // let mut result: u64 = 0;
-    // unsafe {
-    //     for (chunk, pow) in s.as_bytes().chunks(4).zip(POW10[20 - length..].chunks(4)) {
-    //         let chunklen = chunk.len();
+//     let mut length = s.len();
+//     let mut result: u64 = 0;
+//     unsafe {
+//         for (chunk, pow) in s.as_bytes().chunks(4).zip(POW10[20 - length..].chunks(4)) {
+//             let chunklen = chunk.len();
 
-    //         if chunklen < 1 { return result }
-    //         let mut d1 = (chunk.get_unchecked(0) - b'0') as u64;
-    //         let r1 = d1 * pow.get_unchecked(0);
+//             if chunklen < 1 { return result }
+//             let mut d1 = (chunk.get_unchecked(0) - b'0') as u64;
+//             let r1 = d1 * pow.get_unchecked(0);
 
-    //         if chunklen < 2 { return result + r1 }            
-    //         let mut d2 = (chunk.get_unchecked(1) - b'0') as u64;
-    //         let r2= d2 * pow.get_unchecked(1);
+//             if chunklen < 2 { return result + r1 }            
+//             let mut d2 = (chunk.get_unchecked(1) - b'0') as u64;
+//             let r2= d2 * pow.get_unchecked(1);
 
-    //         if chunklen < 3 { return result + r1 + r2 }            
-    //         let mut d3 = (chunk.get_unchecked(2) - b'0') as u64;
-    //         let r3 = d3 * pow.get_unchecked(2);
+//             if chunklen < 3 { return result + r1 + r2 }            
+//             let mut d3 = (chunk.get_unchecked(2) - b'0') as u64;
+//             let r3 = d3 * pow.get_unchecked(2);
 
-    //         if chunklen < 4 { return result + r1 + r2 + r3}            
-    //         let mut d3 = (chunk.get_unchecked(3) - b'0') as u64;
-    //         let r4 = d3 * pow.get_unchecked(3);
+//             if chunklen < 4 { return result + r1 + r2 + r3}            
+//             let mut d3 = (chunk.get_unchecked(3) - b'0') as u64;
+//             let r4 = d3 * pow.get_unchecked(3);
 
-    //         result += r1 + r2 + r3 + r4;
-    //     }
-    // }
+//             result += r1 + r2 + r3 + r4;
+//         }
+//     }
 
-    // return result;
-}
+//     return result;
+ }
 #[cfg(test)]
 mod tests {
     use super::*;
