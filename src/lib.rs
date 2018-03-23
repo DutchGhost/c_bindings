@@ -6,7 +6,7 @@ extern crate test;
 
 use libc::uint64_t;
 
-macro_rules! const_talbe {
+macro_rules! const_table {
     ($type:ty, $name:ident) => (
         const $name: [$type; 20] = [
             10000000000000000000,
@@ -85,14 +85,31 @@ pub fn rust_atoi(s: &str) -> u64 {
     }
 }
 
-trait Atoi {
+/// A trait to convert a `str` into an unsigned integer.
+pub trait Atoi {
+
+    /// Performs the convertion.
+    /// # Examples
+    /// ```
+    /// extern crate c_bindings;
+    /// use c_bindings::Atoi;
+    /// fn main() {
+    ///     assert_eq!(u32::atoi("54321"), Ok(54321));
+    ///     assert_eq!(u32::atoi("5432e"), Err(()));
+    /// }
+    /// ```
     fn atoi(s: &str) -> Result<Self, ()> where Self: Sized;
 }
 
 macro_rules! atoi_unroll {
     ($d:ident, $r:ident, $bytes:expr, $idx:expr, $offset:expr, $TABLE:ident) => (
         let $d = ($bytes.get_unchecked($offset) - 48) as Self;
-        if $d > 9 {return Err(())}
+        
+        //if the digit is greater than 9, something went terribly horribly wrong.
+        //return an Err(())
+        if $d > 9 {
+            return Err(())
+        }
         let $r = $d * $TABLE.get_unchecked($idx + $offset);
     )
 }
@@ -101,22 +118,35 @@ macro_rules! impl_atoi {
     ($int:ty, $table_name:ident) => (
 
         //set up the constant table for this type.
-        const_talbe!($int, $table_name);
+        const_table!($int, $table_name);
 
         impl Atoi for $int {
 
             #[allow(non_snake_case)]
-            #[inline(always)]
+            #[inline]
             fn atoi(s: &str) -> Result<Self, ()> {
-                let BYTE_SLICE = s.as_bytes();
+
+                //convert the str into a byte slice,
+                //also store the length.
+                //These are `constant` variables in this function.
+                let BYTE_SLICE: &[u8] = s.as_bytes();
                 let SLICE_LEN = s.len();
                 
-                let mut result = 0;
-                let mut bytes = BYTE_SLICE;
-                let mut len = s.len();
-                let mut idx = 20 - len;
+                //Initialize all variables.
+                let mut result: Self = 0;
+                let mut bytes: &[u8] = BYTE_SLICE;
+                let mut len: usize = s.len();
+                let mut idx: usize = 20 - len;
 
                 unsafe {
+
+                    //as long as there are more than 4 digits,
+                    //do this loop.
+                    //lookup the digit of the current idx, convert to Self (u8, u16, u32...),
+                    //check if valid,
+                    //multiply with the correct power of 10 from the lookup table.
+                    //update the result so far, the length, the idx.
+                    //lastly update the view in the slice.
                     while len >= 4 {
                         atoi_unroll!(d1, r1, bytes, idx, 0, $table_name);
                         atoi_unroll!(d2, r2, bytes, idx, 1, $table_name);
@@ -130,6 +160,7 @@ macro_rules! impl_atoi {
                         bytes = &BYTE_SLICE[SLICE_LEN - len..];
                     }
 
+                    //A fixup loop, loops for a max of 3 times
                     for offset in 0..len {
                         atoi_unroll!(d, r, bytes, idx, offset, $table_name);
                         result += r;
@@ -240,7 +271,7 @@ mod tests {
         let s = ["123498", "987234", "890774", "982734", "123876", "10987", "84750"];
         b.iter(|| {
             for item in s.iter() {
-                let _n = test::black_box(u32::atoi(item));
+                let _n = test::black_box(u64::atoi(item));
             }
         })
     }
