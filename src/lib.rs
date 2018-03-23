@@ -90,6 +90,7 @@ macro_rules! unroll {
     )
 }
 
+#[inline(always)]
 pub fn safe_atoi(s: &str) -> u64 {
     let mut result = 0;
     
