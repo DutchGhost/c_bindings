@@ -6,6 +6,8 @@ extern crate test;
 
 use libc::uint64_t;
 
+const MINUS: u8 = 48;
+
 macro_rules! const_table {
     ($type:ty, $name:ident) => (
         const $name: [$type; 20] = [
@@ -95,7 +97,7 @@ pub trait Atoi {
     /// use c_bindings::Atoi;
     /// fn main() {
     ///     assert_eq!(u32::atoi("54321"), Ok(54321));
-    ///     assert_eq!(u32::atoi("5432e"), Err(()));
+    ///     assert_eq!(u32::atoi("5432!"), Err(()));
     /// }
     /// ```
     fn atoi(s: &str) -> Result<Self, ()> where Self: Sized;
@@ -103,7 +105,7 @@ pub trait Atoi {
 
 macro_rules! atoi_unroll {
     ($d:ident, $r:ident, $bytes:expr, $idx:expr, $offset:expr, $TABLE:ident) => (
-        let $d = ($bytes.get_unchecked($offset) - 48) as Self;
+        let $d = ($bytes.get_unchecked($offset).wrapping_sub(MINUS)) as Self;
         
         //if the digit is greater than 9, something went terribly horribly wrong.
         //return an Err(())
