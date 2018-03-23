@@ -82,75 +82,40 @@ pub fn rust_atoi(s: &str) -> u64 {
     }
 }
 
-macro_rules! unroll {
-    ($d1:ident, $r1:ident, $i:expr, $ptr:expr) => (
-        let $d1 = (*$ptr - b'0') as u64;
-        let $r1 = $d1 * POW10.get_unchecked($i);
-        $ptr = $ptr.add(1);
+macro_rules! atoi_unroll {
+    ($d:ident, $r:ident, $bytes:expr, $i:expr, $idx:expr) => (
+        let $d = ($bytes.get_unchecked($idx) - 48) as u64;
+        let $r = $d * POW10.get_unchecked($i + $idx);
     )
 }
 
 #[inline(always)]
 pub fn safe_atoi(s: &str) -> u64 {
-    // let mut result = 0;
     
-    // unsafe {
-    //     let mut ptr = s.as_ptr();
-    //     let mut len = s.len();
-    //     let mut i = 20 - len;
-
-    //     while len >= 4 {
-    //         unroll!(d1, r1, i, ptr);
-    //         unroll!(d2, r2, i + 1, ptr);
-    //         unroll!(d3, r3, i + 2, ptr);
-    //         unroll!(d4, r4, i + 3, ptr);
-
-    //         result += r1 + r2 + r3 + r4;
-    //         i += 4;
-    //         len -= 4;
-    //     }
-
-    //     for _ in 0..len {
-    //         let d = (*ptr - b'0') as u64;
-    //         let r = d * POW10.get_unchecked(i);
-    //         result += r;
-    //         i += 1;
-    //         ptr = ptr.add(1);
-    //     }
-
-    //     result
-    // }
+    let BYTE_SLICE = s.as_bytes();
+    let SLICE_LEN = s.len();
     
-    let BYTES_ONCE = s.as_bytes();
     let mut result = 0;
-    let mut bytes = BYTES_ONCE;
+    let mut bytes = BYTE_SLICE;
     let mut len = s.len();
-    let l = s.len();
     let mut i = 20 - len;
 
     unsafe {
         while len >= 4 {
-            let d1 = (bytes.get_unchecked(0) - 48) as u64;
-            let r1 = d1 * POW10.get_unchecked(i);
-
-            let d2 = (bytes.get_unchecked(1) - 48) as u64;
-            let r2 = d2 * POW10.get_unchecked(i + 1);
-
-            let d3 = (bytes.get_unchecked(2) - 48) as u64;
-            let r3 = d3 * POW10.get_unchecked(i + 2);
-
-            let d4 = (bytes.get_unchecked(3) - 48) as u64;
-            let r4 = d4 * POW10.get_unchecked(i + 3);
+            atoi_unroll!(d1, r1, bytes, i, 0);
+            atoi_unroll!(d2, r2, bytes, i, 1);
+            atoi_unroll!(d3, r3, bytes, i, 2);
+            atoi_unroll!(d4, r4, bytes, i, 3); 
             
             result += r1 + r2 + r3 + r4;
             len -= 4;
 
             i += 4;
-            bytes = &BYTES_ONCE[l - len..];
+            bytes = &BYTE_SLICE[SLICE_LEN - len..];
         }
+
         for fix in 0..len {
-            let d = (bytes.get_unchecked(fix) - 48) as u64;
-            let r = d * POW10.get_unchecked(i + fix);
+            atoi_unroll!(d, r, bytes, i, fix);
             result += r;
         }
         return result
