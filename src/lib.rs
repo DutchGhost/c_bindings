@@ -92,33 +92,68 @@ macro_rules! unroll {
 
 #[inline(always)]
 pub fn safe_atoi(s: &str) -> u64 {
-    let mut result = 0;
+    // let mut result = 0;
     
+    // unsafe {
+    //     let mut ptr = s.as_ptr();
+    //     let mut len = s.len();
+    //     let mut i = 20 - len;
+
+    //     while len >= 4 {
+    //         unroll!(d1, r1, i, ptr);
+    //         unroll!(d2, r2, i + 1, ptr);
+    //         unroll!(d3, r3, i + 2, ptr);
+    //         unroll!(d4, r4, i + 3, ptr);
+
+    //         result += r1 + r2 + r3 + r4;
+    //         i += 4;
+    //         len -= 4;
+    //     }
+
+    //     for _ in 0..len {
+    //         let d = (*ptr - b'0') as u64;
+    //         let r = d * POW10.get_unchecked(i);
+    //         result += r;
+    //         i += 1;
+    //         ptr = ptr.add(1);
+    //     }
+
+    //     result
+    // }
+    
+    let BYTES_ONCE = s.as_bytes();
+    let mut result = 0;
+    let mut bytes = BYTES_ONCE;
+    let mut len = s.len();
+    let l = s.len();
+    let mut i = 20 - len;
+
     unsafe {
-        let mut ptr = s.as_ptr();
-        let mut len = s.len();
-        let mut i = 20 - len;
-
         while len >= 4 {
-            unroll!(d1, r1, i, ptr);
-            unroll!(d2, r2, i + 1, ptr);
-            unroll!(d3, r3, i + 2, ptr);
-            unroll!(d4, r4, i + 3, ptr);
+            let d1 = (bytes.get_unchecked(0) - 48) as u64;
+            let r1 = d1 * POW10.get_unchecked(i);
 
+            let d2 = (bytes.get_unchecked(1) - 48) as u64;
+            let r2 = d2 * POW10.get_unchecked(i + 1);
+
+            let d3 = (bytes.get_unchecked(2) - 48) as u64;
+            let r3 = d3 * POW10.get_unchecked(i + 2);
+
+            let d4 = (bytes.get_unchecked(3) - 48) as u64;
+            let r4 = d4 * POW10.get_unchecked(i + 3);
+            
             result += r1 + r2 + r3 + r4;
-            i += 4;
             len -= 4;
-        }
 
-        for _ in 0..len {
-            let d = (*ptr - b'0') as u64;
-            let r = d * POW10.get_unchecked(i);
+            i += 4;
+            bytes = &BYTES_ONCE[l - len..];
+        }
+        for fix in 0..len {
+            let d = (bytes.get_unchecked(fix) - 48) as u64;
+            let r = d * POW10.get_unchecked(i + fix);
             result += r;
-            i += 1;
-            ptr = ptr.add(1);
         }
-
-        result
+        return result
     }
 }
 
