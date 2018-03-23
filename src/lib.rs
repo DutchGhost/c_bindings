@@ -83,9 +83,9 @@ pub fn rust_atoi(s: &str) -> u64 {
 }
 
 macro_rules! atoi_unroll {
-    ($d:ident, $r:ident, $bytes:expr, $i:expr, $idx:expr) => (
-        let $d = ($bytes.get_unchecked($idx) - 48) as u64;
-        let $r = $d * POW10.get_unchecked($i + $idx);
+    ($d:ident, $r:ident, $bytes:expr, $idx:expr, $offset:expr) => (
+        let $d = ($bytes.get_unchecked($offset) - 48) as u64;
+        let $r = $d * POW10.get_unchecked($idx + $offset);
     )
 }
 
@@ -98,24 +98,24 @@ pub fn safe_atoi(s: &str) -> u64 {
     let mut result = 0;
     let mut bytes = BYTE_SLICE;
     let mut len = s.len();
-    let mut i = 20 - len;
+    let mut idx = 20 - len;
 
     unsafe {
         while len >= 4 {
-            atoi_unroll!(d1, r1, bytes, i, 0);
-            atoi_unroll!(d2, r2, bytes, i, 1);
-            atoi_unroll!(d3, r3, bytes, i, 2);
-            atoi_unroll!(d4, r4, bytes, i, 3); 
+            atoi_unroll!(d1, r1, bytes, idx, 0);
+            atoi_unroll!(d2, r2, bytes, idx, 1);
+            atoi_unroll!(d3, r3, bytes, idx, 2);
+            atoi_unroll!(d4, r4, bytes, idx, 3); 
             
             result += r1 + r2 + r3 + r4;
             len -= 4;
 
-            i += 4;
+            idx += 4;
             bytes = &BYTE_SLICE[SLICE_LEN - len..];
         }
 
-        for fix in 0..len {
-            atoi_unroll!(d, r, bytes, i, fix);
+        for offset in 0..len {
+            atoi_unroll!(d, r, bytes, idx, offset);
             result += r;
         }
         return result
