@@ -38,7 +38,7 @@ macro_rules! const_table {
 extern {
     #[inline]
     fn c_clzl(x: uint64_t) -> uint64_t;
-    fn c_atoi(b: *const u8, e: uint64_t) -> uint64_t;
+    fn c_atoi(b: *const u8, e: uint64_t, result: *mut uint64_t) -> uint64_t;
 
 }
 
@@ -48,18 +48,18 @@ extern {
 /// # Examples
 /// ```
 /// extern crate c_bindings;
-/// use c_bindings::rust_clzl;
+/// use c_bindings::crust_clzl;
 /// 
 /// fn main() {
-///     assert_eq!(rust_clzl(1), 63);
-///     assert_eq!(rust_clzl(2), 62);
-///     assert_eq!(rust_clzl(8), 60);
-///     assert_eq!(rust_clzl(std::u64::MAX), 0);
-///     assert_eq!(rust_clzl(0), 64);
+///     assert_eq!(crust_clzl(1), 63);
+///     assert_eq!(crust_clzl(2), 62);
+///     assert_eq!(crust_clzl(8), 60);
+///     assert_eq!(crust_clzl(std::u64::MAX), 0);
+///     assert_eq!(crust_clzl(0), 64);
 /// }
 /// ```
 #[inline]
-pub fn rust_clzl(x: u64) -> u64 {
+pub fn crust_clzl(x: u64) -> u64 {
     
     //clzl of 0 is UB. return 64 instead, since there are 64 zero's.
     if x == 0 { return 64 }
@@ -69,21 +69,25 @@ pub fn rust_clzl(x: u64) -> u64 {
 }
 
 /// Converts a `str` into a u64.
-/// # Safety
-/// It's required for all the characters to be valid digits.
 /// 
 /// # Examples
 /// ```
 /// extern crate c_bindings;
-/// use c_bindings::rust_atoi;
+/// use c_bindings::crust_atoi;
 /// 
 /// fn main() {
-///     assert_eq!(rust_atoi("98765"), 98765);
+///     assert_eq!(crust_atoi("98765"), Ok(98765));
 /// }
 /// ```
-pub fn rust_atoi(s: &str) -> u64 {
+pub fn crust_atoi(s: &str) -> Result<u64, ()> {
+    let mut result = 0;
     unsafe {
-        c_atoi(s.as_ptr(), s.len() as u64)
+        if c_atoi(s.as_ptr(), s.len() as u64, &mut result as *mut _) == 0 {
+            Ok(result)
+        }
+        else {
+            Err(())
+        }
     }
 }
 
@@ -209,64 +213,74 @@ impl_atoi!(usize, POW10_USIZE);
 mod tests {
     use super::*;
     use test::Bencher;
-    
+    const s: [&str; 40] = [
+        "123498", "987234", "890774", "982734", "123876", "10987", "84750", "97824", "12789367", "98274",
+        "786349", "98726734", "897", "98723", "734", "1237", "975", "830", "93674", "10008",
+        "1234", "97234", "870774", "988394", "153176", "50927", "85740", "17234", "17", "10",
+        "286343", "78223798", "697", "72733", "764", "4137", "345", "530", "13274", "100865"
+        ];
     #[test]
-    fn test_rust_clzl() {
-        assert_eq!(rust_clzl(1), 63);
-        assert_eq!(rust_clzl(2), 62);
-        assert_eq!(rust_clzl(8), 60);
-        assert_eq!(rust_clzl(std::u64::MAX), 0);
-        assert_eq!(rust_clzl(0), 64);
+    fn test_crust_clzl() {
+        assert_eq!(crust_clzl(1), 63);
+        assert_eq!(crust_clzl(2), 62);
+        assert_eq!(crust_clzl(8), 60);
+        assert_eq!(crust_clzl(std::u64::MAX), 0);
+        assert_eq!(crust_clzl(0), 64);
+    }
+
+    #[test]
+    fn test_crust_atoi() {
+        let st = "100";
+
+        assert_eq!(crust_atoi(st), Ok(100));
+
+        let ss = "1234";
+        assert_eq!(crust_atoi(ss), Ok(1234));
+
+        let sss = "4";
+        assert_eq!(crust_atoi(sss), Ok(4));
     }
 
     #[test]
     fn test_rust_atoi() {
-        let s = "100";
-
-        assert_eq!(rust_atoi(s), 100);
-
-        let ss = "1234";
-        assert_eq!(rust_atoi(ss), 1234);
-
-        let sss = "4";
-        assert_eq!(rust_atoi(sss), 4);
-    }
-
-    #[test]
-    fn test_safe_atoi() {
         assert_eq!(u32::atoi("987654"), Ok(987654));
         assert_eq!(u16::atoi("1234"), Ok(1234));
         assert_eq!(u64::atoi("123"), Ok(123));
-
         assert_eq!(u32::atoi("12"), Ok(12u32));
         assert_eq!(u16::atoi("1e3"), Err(()));
     }
 
     #[bench]
-    fn rust_native_parse(b: &mut test::Bencher) {
-        let s = ["123498", "987234", "890774", "982734", "123876", "10987", "84750"];
+    fn rust_str_parse(b: &mut test::Bencher) {
         b.iter(|| {
             for item in s.iter() {
-                let _n = test::black_box(item.parse::<u64>());
+                let _n = match test::black_box(item.parse::<u64>()) {
+                    Ok(parsed) => parsed,
+                    Err(_) => panic!(),
+                };
             }
         })
     }
     #[bench]
-    fn rust_atoi_parse(b: &mut test::Bencher) {
-        let s = ["123498", "987234", "890774", "982734", "123876", "10987", "84750"];
+    fn c_atoi_parse(b: &mut test::Bencher) {
         b.iter(|| {
             for item in s.iter() {
-                let _n = test::black_box(rust_atoi(item));
+                let _n = match test::black_box(crust_atoi(item)) {
+                    Ok(parsed) => parsed,
+                    Err(_) => panic!()
+                };
             }
         })
     }
 
     #[bench]
-    fn rust_safe_atoi_parse(b: &mut test::Bencher) {
-        let s = ["123498", "987234", "890774", "982734", "123876", "10987", "84750"];
+    fn rust_atoi_parse(b: &mut test::Bencher) {
         b.iter(|| {
             for item in s.iter() {
-                let _n = test::black_box(u64::atoi(item));
+                let _n = match test::black_box(u64::atoi(item)) {
+                    Ok(parsed) => parsed,
+                    Err(_) => panic!()
+                };
             }
         })
     }
