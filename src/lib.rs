@@ -128,15 +128,9 @@ macro_rules! impl_atoi {
             #[inline]
             fn atoi(s: &str) -> Result<Self, ()> {
 
-                //convert the str into a byte slice,
-                //also store the length.
-                //These are `constant` variables in this function.
-                let BYTE_SLICE: &[u8] = s.as_bytes();
-                let SLICE_LEN = s.len();
-                
                 //Initialize all variables.
                 let mut result: Self = 0;
-                let mut bytes: &[u8] = BYTE_SLICE;
+                let mut bytes: &[u8] = s.as_bytes();
                 let mut len: usize = s.len();
                 let mut idx: usize = 20 - len;
 
@@ -148,7 +142,7 @@ macro_rules! impl_atoi {
                     //check if valid,
                     //multiply with the correct power of 10 from the lookup table.
                     //update the result so far, the length, the idx.
-                    //lastly update the view in the slice.
+                    //lastly update the slice, basically truncate the four digits that are just processed
                     while len >= 4 {
                         atoi_unroll!(d1, r1, bytes, idx, 0, $table_name);
                         atoi_unroll!(d2, r2, bytes, idx, 1, $table_name);
@@ -159,7 +153,7 @@ macro_rules! impl_atoi {
                         len -= 4;
 
                         idx += 4;
-                        bytes = &BYTE_SLICE[SLICE_LEN - len..];
+                        bytes = &bytes[4..];
                     }
 
                     //A fixup loop, loops for a max of 3 times
@@ -183,11 +177,9 @@ impl_atoi!(usize, POW10_USIZE);
 //#[inline(always)]
 // pub fn safe_atoi(s: &str) -> Result<u64, ()> {
     
-//     let BYTE_SLICE = s.as_bytes();
-//     let SLICE_LEN = s.len();
     
 //     let mut result = 0;
-//     let mut bytes = BYTE_SLICE;
+//     let mut bytes = s.as_bytes();
 //     let mut len = s.len();
 //     let mut idx = 20 - len;
 
@@ -202,7 +194,7 @@ impl_atoi!(usize, POW10_USIZE);
 //             len -= 4;
 
 //             idx += 4;
-//             bytes = &BYTE_SLICE[SLICE_LEN - len..];
+//             bytes = &bytes[4..];
 //         }
 
 //         for offset in 0..len {
@@ -242,6 +234,7 @@ mod tests {
 
     #[test]
     fn test_safe_atoi() {
+        assert_eq!(u32::atoi("987654"), Ok(987654));
         assert_eq!(u16::atoi("1234"), Ok(1234));
         assert_eq!(u64::atoi("123"), Ok(123));
 
