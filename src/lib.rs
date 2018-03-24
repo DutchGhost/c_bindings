@@ -142,7 +142,7 @@ macro_rules! impl_atoi {
                     //check if valid,
                     //multiply with the correct power of 10 from the lookup table.
                     //update the result so far, the length, the idx.
-                    //lastly update the view in the slice.
+                    //lastly update the slice, basically truncate the four digits that are just processed
                     while len >= 4 {
                         atoi_unroll!(d1, r1, bytes, idx, 0, $table_name);
                         atoi_unroll!(d2, r2, bytes, idx, 1, $table_name);
